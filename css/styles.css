@@ -1,0 +1,105 @@
+/* 10-mile tracker. Dark by default; light follows the system. */
+
+:root {
+  --bg: #0d0d0f;
+  --surface: #17171a;
+  --line: #2c2c31;
+  --text: #f1eee8;
+  --muted: #a3a09a;
+  --accent: #ff8a6b; /* sunrise coral */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f7f4ee;
+    --surface: #ffffff;
+    --line: #d9d4ca;
+    --text: #1b1a18;
+    --muted: #5f5b54;
+    --accent: #b8452a;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text);
+  font: 400 1rem/1.5 var(--font);
+  font-variant-numeric: tabular-nums;
+}
+
+.shell {
+  max-width: 30rem;
+  margin: 0 auto;
+  padding: calc(env(safe-area-inset-top) + 3rem) 1.25rem 2rem;
+}
+
+.eyebrow {
+  margin: 0 0 0.5rem;
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+h1 {
+  margin: 0;
+  font-size: 2.5rem;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.route {
+  margin: 2.5rem 0 1.5rem;
+}
+
+.route svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.route-line {
+  stroke: var(--line);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.route-tick {
+  stroke: var(--muted);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.route-start {
+  fill: var(--accent);
+}
+
+.route-label {
+  fill: var(--muted);
+  font: 400 11px var(--font);
+  font-variant-numeric: tabular-nums;
+  text-anchor: middle;
+}
+
+.route-label.is-goal {
+  fill: var(--accent);
+  font-weight: 700;
+}
+
+.status {
+  margin: 0;
+  color: var(--muted);
+}
