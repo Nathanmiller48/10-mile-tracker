@@ -4,6 +4,7 @@
   "type": "module",
   "description": "Dev-only tooling. The site itself is plain static files and needs none of this to deploy.",
   "scripts": {
+    "build:data": "node scripts/build-plan.mjs && node scripts/build-content.mjs",
     "serve": "node scripts/serve.mjs",
     "test": "npm run test:unit && npm run test:e2e",
     "test:unit": "node --test \"tests/unit/**/*.test.js\"",
