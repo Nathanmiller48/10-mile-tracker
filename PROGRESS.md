@@ -12,7 +12,7 @@ _Nothing right now._
 - [x] Section 8 decisions asked and recorded in `DECISIONS.md`
 - [x] Static scaffold, placeholder page, `npm test` (unit + Playwright)
 - [x] `PROGRESS.md` and `CLAUDE.md`
-- [ ] Public repo created, pushed, GitHub Pages live and checked at 390 × 844
+- [x] Public repo created, pushed, GitHub Pages live and checked at 390 × 844
 
 ## Phase 2 — the working core
 
@@ -31,7 +31,7 @@ _Nothing right now._
 - [ ] **P2-08 "Today" date logic.** Phone's local date, `?date=YYYY-MM-DD` override, week number, days to target, and sensible before-plan (≤ Nov 11) and after-plan (≥ Jan 1) states. _Verify:_ unit tests for date math across the Nov→Dec boundary and both out-of-range states; screenshots for `?date=2026-11-11` and `?date=2027-01-02`.
 
 ### Shin status engine
-- [ ] **P2-09 Status from the log.** Pure function implementing `PLAN.md` section 7: green / yellow / red from the latest run's during score, the next-morning score vs. the previous morning score, and creeping up across three runs in a row. _Verify:_ unit tests for every row of the section 7 table, each yellow trigger separately, the creeping-up rule, boundaries (2 vs 3, 4 vs 5), and no-data-yet.
+- [ ] **P2-09 Status from the log.** Pure function implementing `PLAN.md` section 7: green / yellow / red from the latest run's during score, the next-morning score vs. the previous morning score, and creeping up across three runs in a row. The next-morning rule follows `DECISIONS.md` item 6 (green if no higher than the previous morning and ≤ 2; yellow if higher or ≥ 3). _Verify:_ unit tests for every row of the section 7 table, each yellow trigger separately, the item 6 cases (1 after 1 is green, 2 after 1 is yellow, 3 after 3 is yellow), the creeping-up rule, boundaries (2 vs 3, 4 vs 5), and no-data-yet.
 - [ ] **P2-10 Consequences.** Yellow: next scheduled run becomes cross-train of the same minutes, 48–72 h no-run window shown, strength calf/tibialis notes drop to bodyweight, Track B proposed. Red: all runs become cross-train, doctor list shown, running locked until 5 consecutive pain-free days are recorded and he confirms he is cleared. _Verify:_ unit tests for the conversion, the window, the red lock and its release (4 days does not unlock, 5 plus confirmation does).
 - [ ] **P2-11 Override.** He can override a lock with a deliberate second tap; the override is recorded in the log. _Verify:_ unit test that an override is stored with date and reason; Playwright test that one tap does nothing and the second does.
 
@@ -103,3 +103,4 @@ _None open. Answered ones live in `DECISIONS.md`._
 ## Log
 
 - 2026-11-11 — Phase 1: reviewed bjj-tracker, recorded decisions (BSB instead of KJV; East Lansing every day), scaffolded static site with placeholder + route line, `npm test` passing (6 unit, 1 Playwright at 390 × 844, screenshot looked at). Checked the printed totals in `PLAN.md` by hand: 50 days, weekly totals and 93.2 all add up; the Track B worked example follows the rules as written.
+- 2026-11-11 — Phase 1: repo created, Pages enabled from `main` root, `npm run test:live` passed against https://nathanmiller48.github.io/10-mile-tracker/ and the live 390 × 844 screenshot was looked at. Next-morning shin rule ambiguity settled (`DECISIONS.md` item 6); P2-09 must test it. Weak spot to watch in P3-08: section 8 does not say which wins when a "4th week" cutback and the post-8.5 "6 then 10" rule land on different Saturdays (they coincide in the worked example); if a December or red trigger exposes it, ask Nate.
