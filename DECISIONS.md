@@ -17,6 +17,10 @@ Answered by Nate. Do not re-ask these. Where an answer differs from `SITE_SPEC.m
    - **A History list:** a plain chronological list of past logged sessions, in addition to the Progress charts.
    Nothing else from that site is carried over.
 
+6. **Next-morning shin rule (resolves an ambiguity in `PLAN.md` section 7).** The green row says "next morning no worse than the morning before"; the yellow row says "still there the next morning". Nate's reading, which the shin engine must use: the next-morning score is **green if it is no higher than the previous recorded morning score and is 2 or under**. It is **yellow if it is higher than the previous morning score, or is 3 or more**. A steady low ache that is not rising stays green. This matches gate 3 in section 4. `PLAN.md` itself is not edited.
+
+7. **Publishing:** Nate approved creating the public repo knowing `PLAN.md` (name, shin details, exam dates) becomes public.
+
 ## Notes for later phases (not decisions, just facts found in Phase 1)
 
 - `PLAN.md` still says "Tue evening: Off (drive to MSU)". That is plan content and is left as written. Nate has not asked for a change.
