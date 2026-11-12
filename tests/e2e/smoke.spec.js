@@ -1,5 +1,4 @@
-import { test, expect } from '@playwright/test';
-import { watchErrors, shot, smallTargets } from './helpers.js';
+import { test, expect, watchErrors, shot, smallTargets } from './helpers.js';
 
 test('loads on a phone with no errors and no sideways scroll', async ({ page }, testInfo) => {
   const errors = watchErrors(page);

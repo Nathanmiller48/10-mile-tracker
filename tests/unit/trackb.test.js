@@ -242,7 +242,10 @@ test('gate 1: walk breaks, a short long run, cross-training or a missed Saturday
   assert.equal(gates(swap(run(4, 1)), 2, '2026-11-22').gates[0].pass, false);
   assert.equal(gates(swap(run(0, 0, { surface: 'cross-train' })), 2, '2026-11-22').gates[0].pass, false);
   assert.equal(gates(swap({ status: 'skipped', reason: 'Travel' }), 2, '2026-11-22').gates[0].pass, false);
-  assert.equal(gates(greenWeek2.slice(0, 4), 2, '2026-11-22').gates[0].pass, false, 'not logged at all');
+  const unlogged = gates(greenWeek2.slice(0, 4), 2, '2026-11-22');
+  assert.equal(unlogged.gates[0].pass, null, 'a forgotten log is not a missed run');
+  assert.equal(unlogged.failed, false);
+  assert.equal(unlogged.pass, false);
   // A treadmill long run at full distance passes.
   assert.equal(gates(swap(run(5, 1, { surface: 'treadmill' })), 2, '2026-11-22').gates[0].pass, true);
 });

@@ -1,6 +1,5 @@
 // Progress screen, milestones, gates and the Track B switch.
-import { test, expect } from '@playwright/test';
-import { seed, run, shot, stored, sampleLog, watchErrors, smallTargets } from './helpers.js';
+import { test, expect, seed, run, shot, stored, sampleLog, watchErrors, smallTargets } from './helpers.js';
 
 const sheet = (page) => page.locator('#sheet');
 
@@ -102,6 +101,15 @@ test('failed gate: says which one, offers Track B, one tap switches, Settings sw
   await expect(card).toContainText('Long run completed nonstop at the planned distance');
   await expect(page.locator('.meta')).toContainText('39 days to go');
   await shot(page, testInfo, 'today-gate-failed');
+  // He may also decline: the card goes away and does not come back for that week.
+  await card.getByRole('button', { name: 'Stay on Track A for now' }).click();
+  await expect(page.locator('.banner', { hasText: 'gate not passed' })).toHaveCount(0);
+  await page.reload();
+  await expect(page.locator('.banner', { hasText: 'gate not passed' })).toHaveCount(0);
+  await page.goto('./?date=2026-11-22#/progress');
+  await expect(page.locator('.gate-overall.is-fail')).toHaveText('Not passed');
+  await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('ten-mile-tracker')); delete s.gateAnswered; localStorage.setItem('ten-mile-tracker', JSON.stringify(s)); });
+  await page.goto('./?date=2026-11-22');
   await card.getByRole('button', { name: 'Switch to Track B' }).click();
   await expect(page.locator('.meta')).toContainText('Track B');
   await expect(page.locator('.meta')).toContainText('62 days to go'); // Jan 23

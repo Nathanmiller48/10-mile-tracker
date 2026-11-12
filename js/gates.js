@@ -41,7 +41,9 @@ export function weekGates(state, plan, week, today) {
     const entry = log[longDay.date]?.morning;
     const run = entry?.status === 'done' ? entry.run : null;
     if (run && run.surface !== 'cross-train') g1 = run.nonstop !== false && run.miles >= longDay.runMiles - 0.05;
-    else if (entry || today > longDay.date) g1 = false;
+    // Logged as skipped or as cross-training: not passed. Simply not logged yet: no answer,
+    // because a forgotten log is not a missed run.
+    else if (entry) g1 = false;
   } else if (due) g1 = true;
 
   // Gate 2

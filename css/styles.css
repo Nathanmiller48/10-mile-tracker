@@ -395,3 +395,6 @@ textarea { resize: vertical; }
   @keyframes arrive { from { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 70%, transparent); } to { box-shadow: 0 0 0 1.25rem transparent; } }
   @keyframes settle { from { opacity: 0; transform: translateY(0.5rem); } to { opacity: 1; transform: none; } }
 }
+
+.conditions { margin: 0.5rem 0 0; font-size: 1.125rem; }
+.credit { margin-top: 0.75rem; }

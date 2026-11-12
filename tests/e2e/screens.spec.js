@@ -1,6 +1,5 @@
 // Screenshots of every screen on several kinds of day, plus checks on what each must show.
-import { test, expect } from '@playwright/test';
-import { seed, run, shot, watchErrors, smallTargets } from './helpers.js';
+import { test, expect, seed, run, shot, watchErrors, smallTargets } from './helpers.js';
 
 test('run day: Tuesday easy run', async ({ page }, testInfo) => {
   await seed(page, { '2026-11-14': { morning: run(4, 1) }, '2026-11-15': { shinAm: { score: 1 } } });

@@ -7,6 +7,8 @@ import { trackBParams } from './plan.js';
 import { reachedMilestones } from './milestones.js';
 import { MILESTONES } from './data/content.js';
 import { progressView } from './progress.js';
+import { loadForecast, verdictFor, sessionHour } from './weather.js';
+import { localISO, diffDays, weekday } from './dates.js';
 import {
   dayView, weekView, libraryView, moreView, safetyView, historyView, settingsView, aboutView,
 } from './views.js';
@@ -22,7 +24,7 @@ const ctx = (() => {
   return { today: date, overridden };
 })();
 // Transient UI state: never saved.
-const ui = { armed: null, week: null, sheet: null, importPending: null, importError: null, notice: null, unlocked: [] };
+const ui = { armed: null, week: null, sheet: null, importPending: null, importError: null, notice: null, unlocked: [], forecast: null };
 
 function applyTheme() {
   const theme = state.settings.theme;
@@ -97,8 +99,23 @@ function render() {
 
 // ---------- the logging sheet ----------
 
+function weatherOpts(date) {
+  if (date !== ctx.today || !ui.forecast) return {};
+  const v = verdictFor(ui.forecast, date, sessionHour(weekday(date)));
+  return v ? { weatherTreadmill: v.verdict === 'treadmill' } : {};
+}
+
+/** Fetch the forecast when the day on screen is close enough to now for one to exist. */
+async function loadWeather() {
+  const ahead = diffDays(localISO(), ctx.today);
+  if (ahead < 0 || ahead > 2) return;
+  const result = await loadForecast(state.settings.location, { storage: localStorage, fetchFn: (url) => fetch(url) });
+  ui.forecast = result ? result.hourly : null;
+  if (!ui.sheet) render();
+}
+
 function openSheet(date, slot, mode = null) {
-  const model = dayModel(state, date, ctx.today);
+  const model = dayModel(state, date, ctx.today, weatherOpts(date));
   if (!model) return;
   const entry = slot === 'morning' ? model.morning.entry : model.evening?.entry;
   ui.sheet = { date, slot, mode: mode || (entry?.status === 'skipped' ? 'skip' : 'log') };
@@ -185,7 +202,7 @@ const actions = {
   'pain-free': () => commit(setDaySlot(state, ctx.today, 'painFree', state.log[ctx.today]?.painFree ? null : true)),
   'confirm-cleared': () => twoTap('confirm-cleared', () => commit({ ...state, clearedOn: ctx.today })),
   'toggle-fallback': (el) =>
-    commit(setDaySlot(state, el.dataset.date, 'fallback', state.log[el.dataset.date]?.fallback ? null : true)),
+    commit(setDaySlot(state, el.dataset.date, 'fallback', el.getAttribute('aria-pressed') !== 'true')),
   'run-anyway': (el) =>
     twoTap(`run-anyway:${el.dataset.date}`, () => {
       const level = shinStatus(state, ctx.today).level;
@@ -195,6 +212,7 @@ const actions = {
       });
     }),
   'switch-track': (el) => commit(withTrack(state, el.dataset.track)),
+  'stay-track': (el) => commit({ ...state, gateAnswered: Number(el.dataset.week) }),
   week: (el) => {
     ui.week = Number(el.dataset.week);
     render();
@@ -251,6 +269,10 @@ document.addEventListener('change', async (event) => {
   if (el.dataset.setting) {
     const value = el.type === 'checkbox' ? el.checked : el.value;
     if (el.dataset.setting === 'track') commit(withTrack(state, value));
+    else if (el.dataset.setting === 'location') {
+      commit({ ...state, settings: { ...state.settings, location: value } });
+      loadWeather();
+    }
     else commit({ ...state, settings: { ...state.settings, [el.dataset.setting]: value } });
   } else if (el.dataset.actionChange === 'import-file' && el.files[0]) {
     const result = importText(await el.files[0].text());
@@ -300,3 +322,4 @@ window.addEventListener('hashchange', () => {
 
 applyTheme();
 render();
+loadWeather();

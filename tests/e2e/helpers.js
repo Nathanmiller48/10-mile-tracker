@@ -1,4 +1,14 @@
 // Shared helpers for the Playwright tests.
+import { test as base, expect } from '@playwright/test';
+
+// No test talks to the real forecast service: requests are refused unless a test mocks them.
+export const test = base.extend({
+  page: async ({ page }, use) => {
+    await page.route('https://api.open-meteo.com/**', (route) => route.abort());
+    await use(page);
+  },
+});
+export { expect };
 
 export const KEY = 'ten-mile-tracker';
 
@@ -37,7 +47,8 @@ export function watchErrors(page) {
   const errors = [];
   page.on('pageerror', (err) => errors.push(String(err)));
   page.on('console', (msg) => {
-    if (msg.type() === 'error') errors.push(msg.text());
+    // A blocked or failed forecast request is expected (tests block it; offline phones hit it too).
+    if (msg.type() === 'error' && !msg.location().url.includes('open-meteo')) errors.push(msg.text());
   });
   page.on('response', (res) => {
     if (res.status() >= 400) errors.push(`${res.status()} ${res.url()}`);

@@ -81,8 +81,9 @@ const fmtMiles = (n) => String(n);
 
 /**
  * Everything the Today layout needs for one date. Returns null outside the plan.
+ * opts.weatherTreadmill: the forecast says treadmill (used until he flips the switch himself).
  */
-export function dayModel(state, date, today) {
+export function dayModel(state, date, today, opts = {}) {
   const plan = getPlan(state).day(date);
   if (!plan) return null;
   const dayLog = state.log[date] || {};
@@ -110,7 +111,8 @@ export function dayModel(state, date, today) {
   if (kind === 'run') {
     const running = runMinutes(plan.runMiles, paceSeconds(state.log, date));
     morning.converted = runConversion(state, date, today);
-    morning.fallback = dayLog.fallback === true && !morning.converted;
+    // The manual switch, once touched, wins over the forecast.
+    morning.fallback = (dayLog.fallback ?? opts.weatherTreadmill ?? false) === true && !morning.converted;
     morning.crossMinutes = running;
     const armor = hasArmor ? SESSIONS['ARM-B'].minutes[1] : 0;
     if (morning.converted) {

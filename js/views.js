@@ -12,6 +12,7 @@ import { runTotals, nextMilestone } from './milestones.js';
 import { failedGate } from './gates.js';
 import { esc, inline, renderBlocks, shinChip } from './html.js';
 import { mileMarkers, mileToX, ROUTE_MILES } from './route.js';
+import { verdictFor, sessionHour } from './weather.js';
 
 export const NOT_MEDICAL = 'Not medical advice.';
 
@@ -141,13 +142,15 @@ function shinBanner(status, state, ui, today) {
 
 function gateCard(state, today) {
   const failed = failedGate(state, getPlan(state), today);
-  if (!failed) return '';
+  // Once he has answered for a week (switched, or chosen to stay), do not ask again.
+  if (!failed || failed.week <= (state.gateAnswered || 0)) return '';
   const which = failed.gates.filter((g) => g.pass === false).map((g) => `<li>${esc(g.text)}</li>`).join('');
   return `<section class="card banner" role="status">
     <h2>Week ${failed.week} gate not passed</h2>
     <ul class="prose-list reasons">${which}</ul>
     <p>The plan's answer is Track B: the 10-miler moves to January. Switching is not failing.</p>
     ${trackButton(state)}
+    <button type="button" class="btn btn-quiet" data-action="stay-track" data-week="${failed.week}">Stay on Track A for now</button>
     <p class="fine"><a href="#/progress">See all gates</a></p>
   </section>`;
 }
@@ -233,12 +236,13 @@ function morningCard(model, state, ui, today, isToday) {
     <p class="eyebrow">${isToday ? 'This morning' : 'Morning'}${m.converted ? ` · shin ${m.converted}` : ''}</p>
     <h2 id="morning-title" class="session-title">${esc(m.title)}</h2>
     ${meta ? `<p class="session-meta">${meta}</p>` : ''}
+    ${model.weather && !m.entry ? `<p class="conditions">${model.weather.verdict === 'outside' ? `${esc(model.weather.conditions)}. <strong>Run outside.</strong>` : `<strong>${esc(model.weather.text)}</strong> <span class="quiet">${esc(model.weather.conditions)}.</span>`}</p>` : ''}
     ${m.sub ? `<p class="session-sub">${esc(m.sub)}</p>` : ''}
     ${m.notes ? `<p class="day-note">${esc(m.notes)}</p>` : ''}
     ${overridden ? '<p class="quiet">You chose to run despite the shin rule. That is recorded.</p>' : ''}
     ${loggedLine(m.entry)}
     <div class="session-actions">${primary}${switches}</div>
-    <div class="session-body">${body}</div>
+    <div class="session-body">${body}${model.weather ? '<p class="fine credit">Forecast: <a href="https://open-meteo.com/" rel="noopener" target="_blank">Open-Meteo</a></p>' : ''}</div>
   </section>`;
 }
 
@@ -316,7 +320,10 @@ export function dayView(state, ui, ctx, date) {
   const testNote = ctx.overridden && isToday
     ? `<p class="test-note">Showing ${esc(shortDate(today))} (test date). <a href="./">Back to the real today</a></p>`
     : '';
-  const model = dayModel(state, date, today);
+  // Forecast verdict for today's run, if a forecast is loaded and covers the hour.
+  const weather = isToday && ui.forecast ? verdictFor(ui.forecast, date, sessionHour(weekday(date))) : null;
+  const model = dayModel(state, date, today, { weatherTreadmill: weather ? weather.verdict === 'treadmill' : undefined });
+  if (model) model.weather = model.morning.kind === 'run' && !model.morning.converted ? weather : null;
   if (!model) {
     if (isToday) return testNote + outsidePlan(state, today, ctx);
     return `<header class="top"><a class="back" href="#/week">‹ Week</a><h1 class="date">${esc(shortDate(date))}</h1></header>
@@ -517,5 +524,6 @@ export function aboutView() {
       <ul class="link-list">${g.links.map((l) => `<li><a href="${esc(l.url)}" rel="noopener" target="_blank">${esc(l.label)}</a></li>`).join('')}</ul></section>`).join('');
   return `${subHeader('About')}
     <p class="notice">A personal tracker for one training plan. ${NOT_MEDICAL}</p>
+    <p class="quiet pad">Weather data by <a href="https://open-meteo.com/" rel="noopener" target="_blank">Open-Meteo.com</a> (CC BY 4.0).</p>
     <h2 class="section-title">Sources behind the plan</h2>${groups}`;
 }

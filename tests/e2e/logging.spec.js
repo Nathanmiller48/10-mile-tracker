@@ -1,7 +1,6 @@
 // Logging every session type, editing, skipping, benchmarks, backup and reset.
-import { test, expect } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
-import { seed, run, shot, stored, watchErrors, smallTargets } from './helpers.js';
+import { test, expect, seed, run, shot, stored, watchErrors, smallTargets } from './helpers.js';
 
 const sheet = (page) => page.locator('#sheet');
 

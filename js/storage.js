@@ -16,6 +16,8 @@
 //   settings: { location, theme, verse, track },
 //   overrides: [{ date, kind, reason, at }],   // deliberate overrides of a shin lock
 //   clearedOn: 'YYYY-MM-DD' | null,            // he confirmed he is cleared to run after a red
+//   trackB?: { trigger, lastGreen, red, from }, // set when he switches to Track B; fixes its schedule
+//   gateAnswered?: week number,                // last failed-gate week he chose to stay on Track A for
 // }
 //
 // Entry: { status: 'done' | 'skipped', reason?, notes?, at,
