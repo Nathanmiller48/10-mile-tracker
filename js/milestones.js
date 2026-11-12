@@ -4,6 +4,8 @@
 import { MILESTONES } from './data/content.js';
 import { runsFromLog } from './shin.js';
 import { weekNumber, diffDays, weekdayName, monthDay } from './dates.js';
+import { getPlan, plannedMilestones } from './plan.js';
+import { greenWeeksReached } from './gates.js';
 
 const round1 = (n) => Math.round(n * 10) / 10;
 
@@ -23,7 +25,8 @@ export function runTotals(log, today) {
 }
 
 /** { milestoneId: date reached } for every milestone reached by `today`. */
-export function reachedMilestones(log, today) {
+export function reachedMilestones(state, today) {
+  const log = state.log || {};
   const reached = {};
   const mark = (id, date) => {
     if (!(id in reached)) reached[id] = date;
@@ -49,7 +52,10 @@ export function reachedMilestones(log, today) {
       if (left >= m.value && right >= m.value) mark(m.id, date);
     }
   }
-  // 'greenWeeks' needs the weekly gates, which arrive with the Progress screen (Phase 3).
+  for (const m of MILESTONES.filter((x) => x.kind === 'greenWeeks')) {
+    const date = greenWeeksReached(state, getPlan(state), today, m.weeks);
+    if (date) mark(m.id, date);
+  }
   return reached;
 }
 
@@ -58,9 +64,11 @@ export function reachedMilestones(log, today) {
  * after `today`; if every planned date has passed, the earliest unreached one.
  * Returns { milestone, days, text } or null when all are reached.
  */
-export function nextMilestone(log, today) {
-  const reached = reachedMilestones(log, today);
-  const open = MILESTONES.filter((m) => !(m.id in reached)).sort((a, b) => a.date.localeCompare(b.date));
+export function nextMilestone(state, today) {
+  const reached = reachedMilestones(state, today);
+  const open = plannedMilestones(getPlan(state))
+    .filter((m) => !(m.id in reached) && m.date)
+    .sort((a, b) => a.date.localeCompare(b.date));
   if (open.length === 0) return null;
   const milestone = open.find((m) => m.date >= today) || open[0];
   const days = diffDays(today, milestone.date);

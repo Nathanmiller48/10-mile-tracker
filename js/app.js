@@ -3,8 +3,12 @@ import { load, save, setDaySlot, defaultState, exportText, importText } from './
 import { resolveToday, isISODate } from './dates.js';
 import { dayModel, fmtPace } from './day.js';
 import { shinStatus } from './shin.js';
+import { trackBParams } from './plan.js';
+import { reachedMilestones } from './milestones.js';
+import { MILESTONES } from './data/content.js';
+import { progressView } from './progress.js';
 import {
-  dayView, weekView, progressView, libraryView, moreView, safetyView, historyView, settingsView, aboutView,
+  dayView, weekView, libraryView, moreView, safetyView, historyView, settingsView, aboutView,
 } from './views.js';
 import { sheetHTML, readSheet, buildEntry } from './sheet.js';
 
@@ -18,7 +22,7 @@ const ctx = (() => {
   return { today: date, overridden };
 })();
 // Transient UI state: never saved.
-const ui = { armed: null, week: null, sheet: null, importPending: null, importError: null, notice: null };
+const ui = { armed: null, week: null, sheet: null, importPending: null, importError: null, notice: null, unlocked: [] };
 
 function applyTheme() {
   const theme = state.settings.theme;
@@ -26,7 +30,20 @@ function applyTheme() {
   else delete document.documentElement.dataset.theme;
 }
 
+/** Switch tracks. Going to B fixes its schedule from the log as it stands today. */
+function withTrack(s, track) {
+  const next = { ...s, settings: { ...s.settings, track } };
+  if (track === 'B') next.trackB = s.trackB || trackBParams(s, ctx.today);
+  else delete next.trackB;
+  return next;
+}
+
 function commit(next) {
+  // A milestone that this change newly reaches gets one calm moment on Today.
+  const before = reachedMilestones(state, ctx.today);
+  const after = reachedMilestones(next, ctx.today);
+  const fresh = MILESTONES.filter((m) => m.id in after && !(m.id in before)).map((m) => m.name);
+  if (fresh.length) ui.unlocked = fresh;
   state = next;
   if (!save(localStorage, state)) ui.notice = 'Could not save on this phone. Check that storage is not full or blocked.';
   applyTheme();
@@ -177,7 +194,7 @@ const actions = {
         overrides: [...state.overrides, { date: el.dataset.date, kind: 'run-anyway', reason: level, at: new Date().toISOString() }],
       });
     }),
-  'switch-track': (el) => commit({ ...state, settings: { ...state.settings, track: el.dataset.track } }),
+  'switch-track': (el) => commit(withTrack(state, el.dataset.track)),
   week: (el) => {
     ui.week = Number(el.dataset.week);
     render();
@@ -233,7 +250,8 @@ document.addEventListener('change', async (event) => {
   const el = event.target;
   if (el.dataset.setting) {
     const value = el.type === 'checkbox' ? el.checked : el.value;
-    commit({ ...state, settings: { ...state.settings, [el.dataset.setting]: value } });
+    if (el.dataset.setting === 'track') commit(withTrack(state, value));
+    else commit({ ...state, settings: { ...state.settings, [el.dataset.setting]: value } });
   } else if (el.dataset.actionChange === 'import-file' && el.files[0]) {
     const result = importText(await el.files[0].text());
     ui.importError = result.ok ? null : result.error;
@@ -274,6 +292,7 @@ window.addEventListener('hashchange', () => {
   ui.importPending = null;
   ui.importError = null;
   ui.notice = null;
+  ui.unlocked = [];
   if (route().tab !== 'week' && route().tab !== 'day') ui.week = null;
   closeSheet();
   render();

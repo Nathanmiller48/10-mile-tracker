@@ -2,15 +2,14 @@
 import {
   SESSIONS, FALLBACK, SHIN_RULES, DOCTOR_LIST, ATTEMPT_DAY, SOURCES, WEEKLY_TEMPLATE,
 } from './data/content.js';
-import { PLAN_DAYS, PLAN_START, PLAN_END, PLAN_WEEKS } from './data/plan.js';
-import {
-  planDay, planPosition, weekDates, weekdayName, weekday, monthDay, shortDate, addDays,
-} from './dates.js';
+import { weekdayName, weekday, monthDay, shortDate, addDays } from './dates.js';
+import { getPlan, planPosition, weekDates } from './plan.js';
 import { shinStatus, runsFromLog } from './shin.js';
 import {
   dayModel, exercisesFor, shinAction, shortLabel, lastLift, entrySummary, TRACKED_LIFTS,
 } from './day.js';
 import { runTotals, nextMilestone } from './milestones.js';
+import { failedGate } from './gates.js';
 import { esc, inline, renderBlocks, shinChip } from './html.js';
 import { mileMarkers, mileToX, ROUTE_MILES } from './route.js';
 
@@ -26,7 +25,6 @@ const REASON_TEXT = {
   'red-flag': 'You reported limping, pain when walking, or a doctor-list sign.',
 };
 
-const TARGET_DATE = PLAN_END;
 
 // ---------- shared pieces ----------
 
@@ -141,6 +139,28 @@ function shinBanner(status, state, ui, today) {
   </section>`;
 }
 
+function gateCard(state, today) {
+  const failed = failedGate(state, getPlan(state), today);
+  if (!failed) return '';
+  const which = failed.gates.filter((g) => g.pass === false).map((g) => `<li>${esc(g.text)}</li>`).join('');
+  return `<section class="card banner" role="status">
+    <h2>Week ${failed.week} gate not passed</h2>
+    <ul class="prose-list reasons">${which}</ul>
+    <p>The plan's answer is Track B: the 10-miler moves to January. Switching is not failing.</p>
+    ${trackButton(state)}
+    <p class="fine"><a href="#/progress">See all gates</a></p>
+  </section>`;
+}
+
+function unlockCard(ui) {
+  if (!ui.unlocked?.length) return '';
+  return `<section class="card unlock" role="status" aria-live="polite">
+    <span class="unlock-dot" aria-hidden="true"></span>
+    <div><p class="eyebrow">Milestone reached</p>${ui.unlocked.map((n) => `<p class="unlock-name">${esc(n)}</p>`).join('')}</div>
+    <a class="btn btn-quiet unlock-link" href="#/progress">See the route</a>
+  </section>`;
+}
+
 function trackButton(state) {
   if (state.settings.track === 'B') return '<p class="quiet">You are on Track B.</p>';
   return `<button type="button" class="btn btn-secondary" data-action="switch-track" data-track="B">Switch to Track B</button>
@@ -240,13 +260,13 @@ function eveningCard(model, isToday) {
 }
 
 function header(date, state, isToday) {
-  const pos = planPosition(date, TARGET_DATE);
+  const pos = planPosition(date, getPlan(state));
   const days = pos.daysToTarget;
   const countdown = days > 1 ? `${days} days to go` : days === 1 ? '1 day to go' : days === 0 ? 'Attempt day' : '';
   const week = pos.week ? `Week ${pos.week} of ${pos.totalWeeks}` : '';
   return `<header class="top">
     ${isToday ? '' : '<a class="back" href="#/week">‹ Week</a>'}
-    <h1 class="date">${esc(weekdayName(date))}<span class="date-sub">${esc(monthDay(date))}</span></h1>
+    <h1 class="date">${esc(weekdayName(date))} <span class="date-sub">${esc(monthDay(date))}</span></h1>
     <p class="meta">
       ${week ? `<span>${week}</span>` : ''}
       <span class="chip">Track ${esc(state.settings.track)}</span>
@@ -256,18 +276,20 @@ function header(date, state, isToday) {
 }
 
 function milestoneStrip(state, today) {
-  const next = nextMilestone(state.log, today);
+  const next = nextMilestone(state, today);
   if (!next) return '';
   return `<a class="strip" href="#/progress"><span class="strip-label">Next milestone</span><span class="strip-text">${esc(next.text)}</span></a>`;
 }
 
 function outsidePlan(state, today, ctx) {
-  const pos = planPosition(today, TARGET_DATE);
+  const plan = getPlan(state);
+  const PLAN_START = plan.start;
+  const pos = planPosition(today, plan);
   const totals = runTotals(state.log, today);
   if (pos.phase === 'before') {
-    const first = planDay(PLAN_START);
+    const first = plan.day(PLAN_START);
     const days = pos.daysToStart;
-    return `<header class="top"><h1 class="date">${esc(weekdayName(today))}<span class="date-sub">${esc(monthDay(today))}</span></h1></header>
+    return `<header class="top"><h1 class="date">${esc(weekdayName(today))} <span class="date-sub">${esc(monthDay(today))}</span></h1></header>
       <section class="card session">
         <p class="eyebrow">The plan starts ${days === 1 ? 'tomorrow' : `in ${days} days`}</p>
         <h2 class="session-title">${esc(weekdayName(PLAN_START))}: ${esc(shortLabel(first))}</h2>
@@ -277,9 +299,9 @@ function outsidePlan(state, today, ctx) {
       </section>
       ${routeStrip(totals.longestNonstop)}`;
   }
-  return `<header class="top"><h1 class="date">${esc(weekdayName(today))}<span class="date-sub">${esc(monthDay(today))}</span></h1></header>
+  return `<header class="top"><h1 class="date">${esc(weekdayName(today))} <span class="date-sub">${esc(monthDay(today))}</span></h1></header>
     <section class="card session">
-      <p class="eyebrow">The 8 weeks are done</p>
+      <p class="eyebrow">The plan is done</p>
       <h2 class="session-title">${totals.longestNonstop >= 10 ? '10 miles nonstop. Done.' : `Longest nonstop run: ${totals.longestNonstop} mi`}</h2>
       <p>${totals.totalMiles} miles logged across ${totals.runCount} runs.</p>
       <div class="session-actions"><a class="btn btn-secondary" href="#/more/history">See your history</a></div>
@@ -309,7 +331,9 @@ export function dayView(state, ui, ctx, date) {
   return `${testNote}
     ${header(date, state, isToday)}
     ${needsShin ? shinCheck(today) : ''}
+    ${isToday ? unlockCard(ui) : ''}
     ${isToday ? shinBanner(status, state, ui, today) : ''}
+    ${isToday && status.level === 'green' && !status.restartAfterRed ? gateCard(state, today) : ''}
     ${morningCard(model, state, ui, today, isToday)}
     ${eveningCard(model, isToday)}
     ${isToday ? milestoneStrip(state, today) : ''}
@@ -320,7 +344,10 @@ export function dayView(state, ui, ctx, date) {
 
 export function weekView(state, ui, ctx) {
   const today = ctx.today;
-  const current = planPosition(today, TARGET_DATE).week || (today < PLAN_START ? 1 : PLAN_WEEKS);
+  const plan = getPlan(state);
+  const planDay = (d) => plan.day(d);
+  const [PLAN_START, PLAN_END, PLAN_WEEKS] = [plan.start, plan.end, plan.weeks];
+  const current = planPosition(today, plan).week || (today < PLAN_START ? 1 : PLAN_WEEKS);
   const week = Math.min(PLAN_WEEKS, Math.max(1, ui.week ?? current));
   const dates = weekDates(week);
   const totals = runTotals(state.log, PLAN_END > today ? today : '9999-12-31');
@@ -347,7 +374,7 @@ export function weekView(state, ui, ctx) {
     .join('');
 
   return `<header class="top">
-      <h1 class="date">Week ${week}<span class="date-sub">of ${PLAN_WEEKS}</span></h1>
+      <h1 class="date">Week ${week} <span class="date-sub">of ${PLAN_WEEKS}</span></h1>
       <p class="meta"><span>${esc(monthDay(dates[0]))} – ${esc(monthDay(dates[6]))}</span></p>
     </header>
     <div class="week-nav">
@@ -356,23 +383,6 @@ export function weekView(state, ui, ctx) {
       <button type="button" class="btn btn-secondary" data-action="week" data-week="${week + 1}" ${week >= PLAN_WEEKS ? 'disabled' : ''} aria-label="Next week">Later ›</button>
     </div>
     <ul class="wk-list" data-swipe="week" data-week="${week}">${rows}</ul>`;
-}
-
-// ---------- Progress (charts arrive in Phase 3) ----------
-
-export function progressView(state, ui, ctx) {
-  const totals = runTotals(state.log, ctx.today);
-  const next = nextMilestone(state.log, ctx.today);
-  const plannedTotal = Math.round(PLAN_DAYS.reduce((s, d) => s + d.runMiles, 0) * 10) / 10;
-  return `<header class="top"><h1 class="date">Progress</h1></header>
-    ${routeStrip(totals.longestNonstop, { big: true })}
-    <section class="card stats">
-      <div><span class="stat-num">${totals.longestNonstop}</span><span class="stat-label">longest nonstop, mi</span></div>
-      <div><span class="stat-num">${totals.totalMiles}</span><span class="stat-label">of ${plannedTotal} mi planned</span></div>
-      <div><span class="stat-num">${totals.runCount}</span><span class="stat-label">runs logged</span></div>
-    </section>
-    ${next ? `<section class="card"><p class="eyebrow">Next milestone</p><p class="strip-text">${esc(next.text)}</p></section>` : ''}
-    <p class="quiet pad">Milestones, charts, the shin trend and the weekly gates are being built next.</p>`;
 }
 
 // ---------- Library ----------
@@ -442,11 +452,12 @@ export function safetyView() {
 }
 
 export function historyView(state) {
+  const active = getPlan(state);
   const dates = Object.keys(state.log).sort().reverse();
   const rows = dates
     .map((date) => {
       const day = state.log[date];
-      const plan = planDay(date);
+      const plan = active.day(date);
       const lines = [];
       if (day.shinAm) lines.push(`<p class="hist-line"><span class="hist-what">Morning shin</span> ${esc(day.shinAm.score)}</p>`);
       if (day.morning) lines.push(`<p class="hist-line"><span class="hist-what">${esc(plan ? shortLabel(plan) : 'Morning')}</span> ${esc(entrySummary(day.morning))}</p>`);

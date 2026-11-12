@@ -196,7 +196,7 @@ test('longest nonstop: treadmill counts, walk breaks and cross-training do not',
   const t = runTotals(s.log, '2026-12-06');
   assert.equal(t.longestNonstop, 5);
   assert.equal(t.totalMiles, 15.2); // walk-break miles still count toward the total
-  const reached = reachedMilestones(s.log, '2026-12-06');
+  const reached = reachedMilestones(s, '2026-12-06');
   assert.equal(reached.m4, '2026-11-14');
   assert.equal(reached.m5, '2026-11-21');
   assert.equal(reached.m10k, undefined);
@@ -209,7 +209,7 @@ test('weekly and total-mile milestones come from the log', () => {
     ['2026-11-19', 'morning', run(2.5, 1)],
     ['2026-11-21', 'morning', run(5, 1)],
   ]);
-  const reached = reachedMilestones(s.log, '2026-11-22');
+  const reached = reachedMilestones(s, '2026-11-22');
   assert.equal(reached.week10, '2026-11-21');
   assert.equal(reached.total25, undefined);
 });
@@ -217,17 +217,17 @@ test('weekly and total-mile milestones come from the log', () => {
 test('benchmark milestones need both sides', () => {
   const entry = (b) => ({ status: 'done', benchmarks: b });
   let s = stateWith([['2026-11-16', 'morning', entry({ calfLeft: 25, calfRight: 22 })]]);
-  assert.equal(reachedMilestones(s.log, '2026-12-22').calf25, undefined);
+  assert.equal(reachedMilestones(s, '2026-12-22').calf25, undefined);
   s = setDaySlot(s, '2026-12-21', 'morning', entry({ calfLeft: 26, calfRight: 25 }));
-  assert.equal(reachedMilestones(s.log, '2026-12-22').calf25, '2026-12-21');
+  assert.equal(reachedMilestones(s, '2026-12-22').calf25, '2026-12-21');
 });
 
 test('next milestone strip reads like the spec', () => {
   const s = stateWith([['2026-11-14', 'morning', run(4, 1)]]);
-  assert.equal(nextMilestone(s.log, '2026-11-19').text, 'Saturday: first 5-miler. 2 days.');
-  assert.equal(nextMilestone({}, '2026-11-12').text, 'Saturday: first 4-miler. 2 days.');
-  assert.equal(nextMilestone({}, '2026-11-13').text, 'Saturday: first 4-miler. 1 day.');
-  assert.equal(nextMilestone({}, '2026-11-14').text, 'Today: first 4-miler.');
-  assert.equal(nextMilestone({}, '2026-12-25').text, 'Thursday: 10 miles nonstop. 6 days.');
-  assert.match(nextMilestone({}, '2027-01-05').text, /^Still ahead: first 4-miler\.$/);
+  assert.equal(nextMilestone(s, '2026-11-19').text, 'Saturday: first 5-miler. 2 days.');
+  assert.equal(nextMilestone({ log: {} }, '2026-11-12').text, 'Saturday: first 4-miler. 2 days.');
+  assert.equal(nextMilestone({ log: {} }, '2026-11-13').text, 'Saturday: first 4-miler. 1 day.');
+  assert.equal(nextMilestone({ log: {} }, '2026-11-14').text, 'Today: first 4-miler.');
+  assert.equal(nextMilestone({ log: {} }, '2026-12-25').text, 'Thursday: 10 miles nonstop. 6 days.');
+  assert.match(nextMilestone({ log: {} }, '2027-01-05').text, /^Still ahead: first 4-miler\.$/);
 });

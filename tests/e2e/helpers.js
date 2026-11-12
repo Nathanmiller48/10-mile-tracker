@@ -56,3 +56,28 @@ export async function smallTargets(page) {
       .map((el) => `${el.tagName} "${(el.textContent || el.name || '').trim().slice(0, 30)}" ${Math.round(el.getBoundingClientRect().height)}px`),
   );
 }
+
+/** A realistic log through Sat Dec 5: four green weeks, benchmarks, climbs, lifts. */
+export function sampleLog() {
+  const log = {};
+  const put = (date, slot, value) => (log[date] = { ...(log[date] || {}), [slot]: value });
+  const runs = [
+    ['2026-11-12', 2, 1], ['2026-11-14', 4, 1], ['2026-11-17', 2.5, 1], ['2026-11-19', 2.5, 2],
+    ['2026-11-21', 5, 1], ['2026-11-24', 3, 1], ['2026-11-26', 3, 0], ['2026-11-28', 6.2, 2],
+    ['2026-12-01', 3, 1], ['2026-12-03', 3.5, 1], ['2026-12-05', 7, 1],
+  ];
+  for (const [date, miles, shin] of runs) {
+    put(date, 'morning', { status: 'done', at: `${date}T12:00:00.000Z`, run: { miles, seconds: Math.round(miles * 645), nonstop: true, surface: 'road', effort: 4, shin } });
+    const next = new Date(`${date}T00:00:00Z`);
+    next.setUTCDate(next.getUTCDate() + 1);
+    put(next.toISOString().slice(0, 10), 'shinAm', { score: 1 });
+  }
+  log['2026-11-12'].morning.benchmarks = { talk2Seconds: 1395 };
+  log['2026-12-03'].morning.benchmarks = { talk2Seconds: 1330 };
+  put('2026-11-13', 'morning', { status: 'done', strength: { checked: [1, 2, 3, 4, 5, 6], lifts: { pullup: { weight: 25, reps: 4 } }, lockoffRounds: 3 }, benchmarks: { pullupLb: 25, lockoffLeft: 2, lockoffRight: 3 } });
+  put('2026-11-16', 'morning', { status: 'done', strength: { checked: [1, 2, 3, 4, 5, 6, 7, 8], lifts: { deadlift: { weight: 185, reps: 5 }, splitSquat: { weight: 30, reps: 6 }, calfRaise: { weight: 20, reps: 10 } } }, benchmarks: { calfLeft: 18, calfRight: 16 } });
+  put('2026-11-16', 'evening', { status: 'done', climb: { grade: 'hard', ache: 1 } });
+  put('2026-11-18', 'morning', { status: 'done' });
+  put('2026-11-25', 'morning', { status: 'skipped', reason: 'Exams' });
+  return log;
+}

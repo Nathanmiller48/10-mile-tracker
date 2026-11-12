@@ -151,7 +151,7 @@ test('before the plan, after the plan, walk day and attempt day are all sensible
   await shot(page, testInfo, 'today-before-plan');
 
   await page.goto('./?date=2027-01-02');
-  await expect(page.getByText('The 8 weeks are done')).toBeVisible();
+  await expect(page.getByText('The plan is done')).toBeVisible();
   await shot(page, testInfo, 'today-after-plan');
 
   await page.goto('./?date=2026-12-25');

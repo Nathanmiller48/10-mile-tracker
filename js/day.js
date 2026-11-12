@@ -2,8 +2,8 @@
 // (yellow/red convert runs to cross-training), the ice/cold switch, and what he has logged.
 // Pure: no DOM.
 import { SESSIONS, WEEKLY_TEMPLATE, SHIN_RULES } from './data/content.js';
-import { PLAN_DAYS } from './data/plan.js';
-import { planDay, weekday } from './dates.js';
+import { weekday } from './dates.js';
+import { getPlan } from './plan.js';
 import { shinStatus } from './shin.js';
 
 export const DEFAULT_PACE = 660; // 11:00 per mile until he has logged a timed run
@@ -57,13 +57,14 @@ export const runMinutes = (miles, pace) => Math.max(5, Math.round((miles * pace)
  * A recorded "run anyway" override for that date cancels the conversion.
  */
 export function runConversion(state, date, today) {
-  const plan = planDay(date);
+  const active = getPlan(state);
+  const plan = active.day(date);
   if (!plan || plan.runMiles <= 0 || date < today) return null;
   if ((state.overrides || []).some((o) => o.date === date && o.kind === 'run-anyway')) return null;
   const status = shinStatus(state, today);
   if (status.locked) return date > status.runDate ? 'red' : null;
   if (status.level === 'yellow') {
-    const next = PLAN_DAYS.find((d) => d.runMiles > 0 && d.date > status.runDate);
+    const next = active.days.find((d) => d.runMiles > 0 && d.date > status.runDate);
     if ((next && next.date === date) || (date > status.runDate && date < status.noRunUntil)) return 'yellow';
   }
   return null;
@@ -82,7 +83,7 @@ const fmtMiles = (n) => String(n);
  * Everything the Today layout needs for one date. Returns null outside the plan.
  */
 export function dayModel(state, date, today) {
-  const plan = planDay(date);
+  const plan = getPlan(state).day(date);
   if (!plan) return null;
   const dayLog = state.log[date] || {};
   const ids = plan.morning.sessions;
