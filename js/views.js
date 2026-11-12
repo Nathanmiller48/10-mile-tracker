@@ -13,6 +13,7 @@ import { failedGate } from './gates.js';
 import { esc, inline, renderBlocks, shinChip } from './html.js';
 import { mileMarkers, mileToX, ROUTE_MILES } from './route.js';
 import { verdictFor, sessionHour } from './weather.js';
+import { verseFor, esvUrl } from './verse.js';
 
 export const NOT_MEDICAL = 'Not medical advice.';
 
@@ -53,6 +54,16 @@ export function routeStrip(longest, { big = false } = {}) {
     </svg>
     <p class="route-caption">${longest > 0 ? `Longest nonstop: <strong>${longest} mi</strong>` : 'Your longest nonstop run fills this line.'}</p>
   </section>`;
+}
+
+/** Verse of the day: small, at the bottom of Today. Off in Settings. */
+function verseBlock(state, today) {
+  if (!state.settings.verse) return '';
+  const v = verseFor(today);
+  return `<figure class="verse">
+    <blockquote>${esc(v.text)}</blockquote>
+    <figcaption><a href="${esc(esvUrl(v.ref))}" rel="noopener" target="_blank" aria-label="${esc(v.ref)}, open in the ESV">${esc(v.ref)}</a> <span class="quiet">BSB</span></figcaption>
+  </figure>`;
 }
 
 function statusPill(entry, date, today) {
@@ -301,7 +312,8 @@ function outsidePlan(state, today, ctx) {
         <p class="quiet">Nothing to log today. Lay out your kit.</p>
         <div class="session-actions"><a class="btn btn-secondary" href="#/day/${PLAN_START}">See the first day</a></div>
       </section>
-      ${routeStrip(totals.longestNonstop)}`;
+      ${routeStrip(totals.longestNonstop)}
+      ${verseBlock(state, today)}`;
   }
   return `<header class="top"><h1 class="date">${esc(weekdayName(today))} <span class="date-sub">${esc(monthDay(today))}</span></h1></header>
     <section class="card session">
@@ -344,7 +356,8 @@ export function dayView(state, ui, ctx, date) {
     ${morningCard(model, state, ui, today, isToday)}
     ${eveningCard(model, isToday)}
     ${isToday ? milestoneStrip(state, today) : ''}
-    ${isToday ? routeStrip(totals.longestNonstop) : ''}`;
+    ${isToday ? routeStrip(totals.longestNonstop) : ''}
+    ${isToday ? verseBlock(state, today) : ''}`;
 }
 
 // ---------- Week ----------
@@ -524,6 +537,7 @@ export function aboutView() {
       <ul class="link-list">${g.links.map((l) => `<li><a href="${esc(l.url)}" rel="noopener" target="_blank">${esc(l.label)}</a></li>`).join('')}</ul></section>`).join('');
   return `${subHeader('About')}
     <p class="notice">A personal tracker for one training plan. ${NOT_MEDICAL}</p>
+    <p class="quiet pad">Verse text: Berean Standard Bible, public domain. References link to the ESV on esv.org.</p>
     <p class="quiet pad">Weather data by <a href="https://open-meteo.com/" rel="noopener" target="_blank">Open-Meteo.com</a> (CC BY 4.0).</p>
     <h2 class="section-title">Sources behind the plan</h2>${groups}`;
 }

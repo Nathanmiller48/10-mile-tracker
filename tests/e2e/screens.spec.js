@@ -257,3 +257,24 @@ test('more, history, settings and about', async ({ page }, testInfo) => {
   await expect(page.locator('.link-list a')).toHaveCount(19);
   await shot(page, testInfo, 'about');
 });
+
+test('verse of the day: on by default, same verse each time that day, links to the ESV, can be turned off', async ({ page }, testInfo) => {
+  await page.goto('./?date=2026-11-12');
+  const verse = page.locator('.verse');
+  await expect(verse.locator('blockquote')).toHaveText('But those who wait upon the LORD will renew their strength; they will mount up with wings like eagles; they will run and not grow weary, they will walk and not faint.');
+  await expect(verse.getByRole('link')).toHaveText('Isaiah 40:31');
+  await expect(verse.getByRole('link')).toHaveAttribute('href', 'https://www.esv.org/Isaiah+40:31/');
+  await expect(verse).toContainText('BSB');
+  expect(await smallTargets(page)).toEqual([]);
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await shot(page, testInfo, 'today-verse');
+  await page.reload();
+  await expect(verse.getByRole('link')).toHaveText('Isaiah 40:31');
+  await page.goto('./?date=2026-11-13');
+  await expect(verse.getByRole('link')).not.toHaveText('Isaiah 40:31');
+  await page.goto('./?date=2026-11-12#/more/settings');
+  await page.getByLabel('Verse of the day').uncheck();
+  await page.goto('./?date=2026-11-12');
+  await expect(page.locator('#morning-title')).toBeVisible();
+  await expect(page.locator('.verse')).toHaveCount(0);
+});

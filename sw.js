@@ -2,7 +2,7 @@
 // Caches the app shell so the site opens with no signal. A new deploy changes VERSION;
 // the new worker installs in the background, takes over, and the page reloads itself once.
 // It never touches localStorage, so the log is safe across updates.
-const VERSION = '6deb30df8536';
+const VERSION = '9aa73029da93';
 const CACHE = `ten-mile-shell-${VERSION}`;
 const SHELL = [
   "./",
@@ -15,6 +15,7 @@ const SHELL = [
   "js/app.js",
   "js/data/content.js",
   "js/data/plan.js",
+  "js/data/verses.js",
   "js/dates.js",
   "js/day.js",
   "js/gates.js",
@@ -27,6 +28,7 @@ const SHELL = [
   "js/shin.js",
   "js/storage.js",
   "js/trackb.js",
+  "js/verse.js",
   "js/views.js",
   "js/weather.js",
   "manifest.webmanifest"

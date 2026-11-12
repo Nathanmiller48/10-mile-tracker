@@ -398,3 +398,8 @@ textarea { resize: vertical; }
 
 .conditions { margin: 0.5rem 0 0; font-size: 1.125rem; }
 .credit { margin-top: 0.75rem; }
+
+/* ---------- verse of the day ---------- */
+.verse { margin: 0.5rem 0.25rem 0; padding: 0.75rem 0 0; border-top: 1px solid var(--line); color: var(--muted); }
+.verse blockquote { margin: 0 0 0.25rem; }
+.verse figcaption a { display: inline-flex; align-items: center; min-height: 3rem; font-weight: 600; }

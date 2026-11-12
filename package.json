@@ -4,7 +4,7 @@
   "type": "module",
   "description": "Dev-only tooling. The site itself is plain static files and needs none of this to deploy.",
   "scripts": {
-    "build:data": "node scripts/build-plan.mjs && node scripts/build-content.mjs && node scripts/build-sw.mjs",
+    "build:data": "node scripts/build-plan.mjs && node scripts/build-content.mjs && node scripts/build-verses.mjs && node scripts/build-sw.mjs",
     "build:sw": "node scripts/build-sw.mjs",
     "serve": "node scripts/serve.mjs",
     "pretest": "node scripts/build-sw.mjs",
