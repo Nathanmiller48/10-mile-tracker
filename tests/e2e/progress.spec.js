@@ -171,3 +171,12 @@ test('Track B past the hard cap shows the plan\'s own warning', async ({ page })
   await page.goto('./?date=2026-11-22#/progress');
   await expect(page.getByText('if the 10-miler isn\'t done by Sat Jan 30, stop chasing the date')).toBeVisible();
 });
+
+test('Track B chosen in an earlier build (no schedule saved) gets its schedule on load', async ({ page }) => {
+  await seed(page, { '2026-11-14': { morning: run(4, 1) } }, { settings: { location: 'east-lansing', theme: 'system', verse: true, track: 'B' } });
+  await page.goto('./?date=2026-11-22');
+  await expect(page.locator('.meta')).toContainText('Track B');
+  expect((await stored(page)).trackB).toEqual({ trigger: '2026-11-22', lastGreen: 4, red: false, from: '2026-11-22' });
+  await page.goto('./?date=2026-11-22#/day/2026-11-28');
+  await expect(page.locator('#morning-title')).toHaveText('Long run 4');
+});

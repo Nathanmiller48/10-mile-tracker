@@ -63,6 +63,7 @@ test('opens with no signal, on any route, and a log entry saves offline', async 
 });
 
 test('a new deploy is picked up on the next open without clearing anything, and the log survives', async ({ page, request, baseURL }) => {
+  test.skip(!baseURL.includes('localhost'), 'uses the dev server deploy hook');
   const hook = (name) => request.get(new URL(`/__test/${name}`, baseURL).href);
   await hook('reset');
   try {

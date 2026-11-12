@@ -290,10 +290,26 @@ function header(date, state, isToday) {
   </header>`;
 }
 
+/**
+ * The slim strip under the date: the route line filled to his longest nonstop run, and
+ * the next milestone. SITE_SPEC section 6 wants both visible at 6:10am without scrolling,
+ * so they sit above the session card rather than below it.
+ */
 function milestoneStrip(state, today) {
   const next = nextMilestone(state, today);
-  if (!next) return '';
-  return `<a class="strip" href="#/progress"><span class="strip-label">Next milestone</span><span class="strip-text">${esc(next.text)}</span></a>`;
+  const longest = runTotals(state.log, today).longestNonstop;
+  const [x0, x1, y] = [4, 336, 6];
+  const fillX = mileToX(longest, x0, x1);
+  const caption = longest > 0 ? `Longest ${longest} mi` : 'Your longest nonstop run fills this line.';
+  return `<a class="strip strip-slim" href="#/progress">
+    <span class="route"><svg viewBox="0 0 340 12" role="img" aria-label="${longest > 0 ? `Longest nonstop run: ${longest} of 10 miles` : 'Ten miles. No runs logged yet'}">
+      <line class="route-line" x1="${x0}" y1="${y}" x2="${x1}" y2="${y}"/>
+      ${longest > 0 ? `<line class="route-fill" x1="${x0}" y1="${y}" x2="${fillX}" y2="${y}"/>` : ''}
+      <circle class="route-dot" cx="${fillX}" cy="${y}" r="5"/>
+      <circle class="route-end" cx="${x1}" cy="${y}" r="4"/>
+    </svg></span>
+    <span class="strip-row">${next ? `<span class="strip-text">${esc(next.text)}</span>` : ''}<span class="route-caption">${caption}</span></span>
+  </a>`;
 }
 
 function outsidePlan(state, today, ctx) {
@@ -349,14 +365,13 @@ export function dayView(state, ui, ctx, date) {
 
   return `${testNote}
     ${header(date, state, isToday)}
+    ${isToday ? milestoneStrip(state, today) : ''}
     ${needsShin ? shinCheck(today) : ''}
     ${isToday ? unlockCard(ui) : ''}
     ${isToday ? shinBanner(status, state, ui, today) : ''}
     ${isToday && status.level === 'green' && !status.restartAfterRed ? gateCard(state, today) : ''}
     ${morningCard(model, state, ui, today, isToday)}
     ${eveningCard(model, isToday)}
-    ${isToday ? milestoneStrip(state, today) : ''}
-    ${isToday ? routeStrip(totals.longestNonstop) : ''}
     ${isToday ? verseBlock(state, today) : ''}`;
 }
 

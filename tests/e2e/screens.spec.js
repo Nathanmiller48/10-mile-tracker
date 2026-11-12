@@ -17,7 +17,7 @@ test('run day: Tuesday easy run', async ({ page }, testInfo) => {
   await expect(page.locator('.strip-text')).toHaveText('Saturday: first 5-miler. 4 days.');
   await expect(page.locator('.route-caption')).toContainText('4 mi');
   // The answer must be on screen without scrolling.
-  for (const sel of ['#morning-title', '.done-by', 'button:has-text("Log run")']) {
+  for (const sel of ['.strip-text', '.route', '#morning-title', '.done-by', 'button:has-text("Log run")']) {
     const box = await page.locator(sel).first().boundingBox();
     expect(box.y + box.height, `${sel} above the tab bar`).toBeLessThan(844 - 60);
   }

@@ -1,0 +1,40 @@
+{
+  "v": 1,
+  "log": {
+    "2026-11-12": {
+      "morning": {
+        "status": "done",
+        "at": "2026-11-12T12:31:10.000Z",
+        "benchmarks": { "talk2Seconds": 1395 },
+        "run": { "miles": 2, "seconds": 1395, "nonstop": true, "surface": "road", "effort": 4, "shin": 1 },
+        "armor": true
+      }
+    },
+    "2026-11-13": {
+      "shinAm": { "score": 1, "at": "2026-11-13T11:02:00.000Z" },
+      "morning": {
+        "status": "done",
+        "at": "2026-11-13T12:40:00.000Z",
+        "benchmarks": { "pullupLb": 25, "lockoffLeft": 2, "lockoffRight": 3 },
+        "strength": { "checked": [1, 2, 3, 4, 5, 6], "lifts": { "pullup": { "weight": 25, "reps": 4 } }, "lockoffRounds": 3 }
+      },
+      "evening": { "status": "done", "at": "2026-11-14T01:10:00.000Z", "climb": { "grade": "easy", "ache": 1 } }
+    },
+    "2026-11-14": {
+      "fallback": true,
+      "morning": {
+        "status": "done",
+        "notes": "Icy, did it inside",
+        "at": "2026-11-14T14:05:00.000Z",
+        "run": { "miles": 4, "seconds": 2700, "nonstop": true, "surface": "treadmill", "shin": 2 }
+      }
+    },
+    "2026-11-15": {
+      "shinAm": { "score": 1, "at": "2026-11-15T12:00:00.000Z" },
+      "morning": { "status": "skipped", "reason": "Travel", "at": "2026-11-15T20:00:00.000Z" }
+    }
+  },
+  "settings": { "location": "east-lansing", "theme": "dark", "verse": true, "track": "A" },
+  "overrides": [],
+  "clearedOn": null
+}

@@ -320,6 +320,12 @@ window.addEventListener('hashchange', () => {
   render();
 });
 
+// Earlier builds could set Track B without a schedule. Give it one, built from the log.
+if (state.settings.track === 'B' && !state.trackB) {
+  state = withTrack(state, 'B');
+  save(localStorage, state);
+}
+
 applyTheme();
 render();
 loadWeather();

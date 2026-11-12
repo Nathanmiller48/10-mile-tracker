@@ -97,3 +97,35 @@ test('setDaySlot does not mutate, and removing the last slot removes the day', (
   assert.equal(b.log['2026-11-13'], undefined);
   assert.ok(b.log['2026-11-12'].morning);
 });
+
+// ---- Data saved by the Phase 2 build must keep working after every later deploy ----
+
+test('a log saved by the Phase 2 version loads completely and drives every later feature', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const { shinStatus } = await import('../../js/shin.js');
+  const { reachedMilestones, runTotals } = await import('../../js/milestones.js');
+  const { dayModel } = await import('../../js/day.js');
+  const { getPlan } = await import('../../js/plan.js');
+  const { allGates } = await import('../../js/gates.js');
+  const raw = await readFile(new URL('../fixtures/phase2-state.json', import.meta.url), 'utf8');
+  const saved = JSON.parse(raw);
+  const s = load(fakeStorage({ [STORAGE_KEY]: raw }));
+
+  assert.equal(s.v, VERSION, 'no version bump was needed: every later field is optional');
+  assert.deepEqual(s.log, saved.log, 'every entry is still there, untouched');
+  assert.deepEqual(s.settings, saved.settings);
+  assert.equal(s.trackB, undefined);
+
+  const today = '2026-11-16';
+  assert.equal(shinStatus(s, today).level, 'green');
+  assert.deepEqual(runTotals(s.log, today), { longestNonstop: 4, totalMiles: 6, weekMiles: { 1: 6 }, runCount: 2 });
+  assert.deepEqual(reachedMilestones(s, today), { m4: '2026-11-14' });
+  assert.equal(getPlan(s).track, 'A');
+  assert.equal(allGates(s, getPlan(s), today)[0].pass, true);
+  assert.equal(dayModel(s, '2026-11-14', today).morning.fallback, true);
+  assert.equal(dayModel(s, '2026-11-16', today).morning.title, 'Legs + Armor');
+  // Round trip: saving it again changes nothing he logged.
+  const storage = fakeStorage();
+  save(storage, s);
+  assert.deepEqual(load(storage).log, saved.log);
+});

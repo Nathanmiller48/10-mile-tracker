@@ -56,7 +56,7 @@ test('a run with walk breaks on the treadmill, edited later', async ({ page }) =
   await expect(sheet(page).getByLabel('Notes')).toHaveValue('Legs heavy after mile 3');
   await sheet(page).getByRole('button', { name: 'Yes, no walk breaks' }).click();
   await sheet(page).getByRole('button', { name: 'Log run' }).click();
-  await expect(page.locator('.route-caption')).toContainText('5 mi');
+  await expect(page.locator('.route-caption')).toHaveText('Longest 5 mi');
   expect((await stored(page)).log['2026-11-21'].morning.run).toMatchObject({ surface: 'treadmill', nonstop: true, effort: 6, shin: 2 });
 });
 
