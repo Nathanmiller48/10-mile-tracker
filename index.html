@@ -10,21 +10,18 @@
   <script type="module" src="js/app.js"></script>
 </head>
 <body>
-  <main class="shell">
-    <header class="masthead">
-      <p class="eyebrow">Nov 12 – Dec 31, 2026</p>
-      <h1>10 miles nonstop</h1>
-    </header>
+  <main id="app" class="shell" tabindex="-1"></main>
 
-    <section class="route" aria-label="The route: ten miles">
-      <svg viewBox="0 0 340 56" role="img" aria-label="A ten-mile line with a marker at each mile, not yet started">
-        <line class="route-line" x1="10" y1="22" x2="330" y2="22"/>
-        <g id="route-markers"></g>
-      </svg>
-    </section>
+  <dialog id="sheet" class="sheet" aria-labelledby="sheet-title"></dialog>
 
-    <p class="status" id="status">Coming soon.</p>
-    <noscript><p class="status">This site needs JavaScript.</p></noscript>
-  </main>
+  <nav id="tabs" class="tabs" aria-label="Main">
+    <a href="#/today" data-tab="today">Today</a>
+    <a href="#/week" data-tab="week">Week</a>
+    <a href="#/progress" data-tab="progress">Progress</a>
+    <a href="#/library" data-tab="library">Library</a>
+    <a href="#/more" data-tab="more">More</a>
+  </nav>
+
+  <noscript><p class="shell">This site needs JavaScript.</p></noscript>
 </body>
 </html>
