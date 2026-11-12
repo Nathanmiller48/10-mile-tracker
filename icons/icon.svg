@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#0d0d0f"/>
+  <text x="256" y="268" text-anchor="middle" font-family="system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="210" font-weight="800" letter-spacing="-8" fill="#f1eee8">10</text>
+  <line x1="112" y1="340" x2="400" y2="340" stroke="#303036" stroke-width="18" stroke-linecap="round"/>
+  <line x1="112" y1="340" x2="312" y2="340" stroke="#ff8a6b" stroke-width="18" stroke-linecap="round"/>
+  <circle cx="312" cy="340" r="24" fill="#ff8a6b"/>
+  <circle cx="400" cy="340" r="17" fill="#0d0d0f" stroke="#a8a59f" stroke-width="8"/>
+</svg>

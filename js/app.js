@@ -323,3 +323,20 @@ window.addEventListener('hashchange', () => {
 applyTheme();
 render();
 loadWeather();
+
+// Offline support. When a new version takes over, reload once so he sees it straight away,
+// but never while he is in the middle of logging something.
+if ('serviceWorker' in navigator) {
+  const hadController = !!navigator.serviceWorker.controller;
+  let reloading = false;
+  const reloadWhenIdle = () => {
+    if (reloading) return;
+    if (ui.sheet) return void setTimeout(reloadWhenIdle, 1000);
+    reloading = true;
+    location.reload();
+  };
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (hadController) reloadWhenIdle();
+  });
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}

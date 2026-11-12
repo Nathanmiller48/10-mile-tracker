@@ -12,6 +12,8 @@ export default defineConfig({
     isMobile: true,
     hasTouch: true,
     colorScheme: 'dark',
+    // The service worker is exercised only by tests/e2e/offline.spec.js.
+    serviceWorkers: 'block',
   },
   webServer: {
     command: 'node scripts/serve.mjs',
